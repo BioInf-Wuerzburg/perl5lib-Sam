@@ -10,8 +10,8 @@ use lib '../';
 
 use Sam::Parser;
 use Sam::Alignment qw(:flags);
-use Verbose;
-
+#use Verbose;
+use Log::Log4perl;
 our $VERSION = '0.02';
 our ($REVISION) = '$Revision$' =~ /(\d+)/;
 our ($MODIFIED) = '$Date$' =~ /Date: (\S+\s\S+)/;
@@ -71,7 +71,7 @@ Initial Consensus module. Provides Constructor, generic accessor
 
 # Init a few globals, e.g. class attributes
 
-our $V;
+#our $V;
 
 
 
@@ -128,7 +128,10 @@ Verbose messages are handled using the Verbose.pm module. To
 
 =cut
 
-$V = Verbose->new();
+#$V = Verbose->new();
+
+my $L = Log::Log4perl::get_logger();
+
 
 =head2 $MaxCoverage [100]
 
@@ -338,7 +341,8 @@ sub _state_matrix{
 				#($S[$rpos-1][exists ($states{$complex_state}) ? $states{$complex_state} : $states{$complex_state} = keys %states])++; 
 				#$seq[$#seq].= 
 			}else{
-				$V->exit("Unknown Cigar '".$cigar[$i+1]."'");
+				$L->info("Unknown Cigar '".$cigar[$i+1]."'");
+				exit;
 			}
 		}
 	}

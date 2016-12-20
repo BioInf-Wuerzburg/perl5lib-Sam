@@ -10,7 +10,9 @@ use List::Util;
 # preference libs in same folder over @INC
 use lib '../';
 
-use Verbose;
+#use Verbose;
+
+use Log::Log4perl;
 
 use Sam::Parser;
 use Sam::Alignment 0.10 ':flags';
@@ -72,7 +74,9 @@ Verbose messages are handled using the Verbose.pm module. To
 
 =cut
 
-our $V = Verbose->new();
+#our $V = Verbose->new();
+my $L = Log::Log4perl::get_logger();
+
 
 =head2 $BinSize [20]
 
@@ -419,7 +423,7 @@ sub State_matrix{
 		@_
 	);
 
-	die unless defined ($p{alns} and $p{'length'}) || $p{matrix};
+	$L->logdie() unless defined ($p{alns} and $p{'length'}) || $p{matrix};
 
 	# state matrix
 	my @S = $p{matrix}
@@ -485,7 +489,8 @@ sub State_matrix{
                 }
 
 
-		$V->exit("Empty Cigar") unless @cigar;
+		$L->info("Empty Cigar"); 
+		exit unless @cigar;
 
 		# reference position
 		my $rpos = $aln->pos-1;
@@ -520,7 +525,8 @@ sub State_matrix{
 				}elsif($cigar[$i+1] eq 'I'){
 					$ic+= $cigar[$i];
 				}else{
-					$V->exit("Unknown Cigar '".$cigar[$i+1]."'");
+					$L->info("Unknown Cigar '".$cigar[$i+1]."'");
+					exit;
 				}
 			}
 
@@ -550,7 +556,8 @@ sub State_matrix{
 				}elsif($cigar[$i+1] eq 'I'){
 					$tail+=$cigar[$i];
 				}else{
-					$V->exit("Unknown Cigar '".$cigar[$i+1]."'");
+					$L->info("Unknown Cigar '".$cigar[$i+1]."'");
+					exit;
 				}
 			}
 
@@ -602,7 +609,8 @@ sub State_matrix{
                         }
                         $qpos += $cigar[$i];
                     } else {
-                        $V->exit("Unknown Cigar '".$cigar[$i+1]."'");
+                        $L->info("Unknown Cigar '".$cigar[$i+1]."'");
+			exit;
                     }
 		}
 
@@ -1214,7 +1222,7 @@ coverage cutoff of a particular read and filter surplus alignments.
 
 sub filter_by_coverage{
     my ($self, $cov) = (@_);
-    die "coverage required" unless $cov;
+    $L->logdie( "coverage required") unless $cov;
 
     if ($cov < $self->{max_coverage}) {
         $self->{max_coverage} = $cov;
@@ -1516,7 +1524,7 @@ Return alignment by iid.
 
 sub aln_by_iid{
     my ($self, $iid) = @_;
-    die __PACKAGE__."->aln_by_iid: IID ($iid) does not exist\n" unless exists $self->{_alns}{$iid};
+    $L->logdie( __PACKAGE__."->aln_by_iid: IID ($iid) does not exist\n") unless exists $self->{_alns}{$iid};
     return $self->{_alns}{$iid};
 }
 
@@ -1594,7 +1602,7 @@ sub is{
 		}elsif(CORE::ref($is) eq 'CODE'){
 			$self->{_is} = $is;
 		}else{
-			die (((caller 0)[3])." neither ARRAY nor CODE reference given!\n");
+			$L->logdie(((caller 0)[3])." neither ARRAY nor CODE reference given!\n");
 		}
 	}
 	return $self->{_is};
@@ -1928,7 +1936,7 @@ Test if a value/range lies within a given set of ranges. ranges are expected in
 
 sub _is_in_range{
     my ($c, $ranges) = @_;
-    die __PACKAGE__."::_is_in_range: requires exactly to arguments: VALUE or RANGE[OFFSET, LENGTH],  RANGES[[OFFSET, LENGTH][OFFSET, LENGTH]]" unless @_ == 2;
+    $L->logdie( __PACKAGE__."::_is_in_range: requires exactly to arguments: VALUE or RANGE[OFFSET, LENGTH],  RANGES[[OFFSET, LENGTH][OFFSET, LENGTH]]") unless @_ == 2;
 
     if (CORE::ref $c eq "ARRAY") {
         my $c1 = $c->[0];
@@ -1946,7 +1954,7 @@ sub _is_in_range{
             return 1 if $c >= $r->[0] && $c < $r->[0] + $r->[1];
         }
     }else {
-        die __PACKAGE__."::_is_in_range: first arguments needs to be SCALAR or ARRAY ref";
+        $L->logdie( __PACKAGE__."::_is_in_range: first arguments needs to be SCALAR or ARRAY ref");
     }
     return 0;
 }

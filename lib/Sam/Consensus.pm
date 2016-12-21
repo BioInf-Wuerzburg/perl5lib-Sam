@@ -11,7 +11,7 @@ use lib '../';
 use Sam::Parser;
 use Sam::Alignment qw(:flags);
 #use Verbose;
-use Log::Log4perl;
+use Log::Log4perl qw(:easy);
 our $VERSION = '0.02';
 our ($REVISION) = '$Revision$' =~ /(\d+)/;
 our ($MODIFIED) = '$Date$' =~ /Date: (\S+\s\S+)/;
